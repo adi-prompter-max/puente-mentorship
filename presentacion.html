@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puente - Plataforma de Mentoría Digital</title>
+<style>
+:root {
+  --primary: #2B7A4B;
+  --primary-light: #3a9d63;
+  --primary-dark: #1e5a36;
+  --dark: #171717;
+  --dark-2: #1e1e1e;
+  --dark-3: #2a2a2a;
+  --gray-1: #333;
+  --gray-2: #555;
+  --gray-3: #888;
+  --gray-4: #aaa;
+  --gray-5: #ccc;
+  --gray-6: #e5e5e5;
+  --white: #ffffff;
+  --bg: #ffffff;
+  --bg-2: #f5f5f5;
+  --text: #171717;
+  --text-2: #555;
+  --card-bg: rgba(255,255,255,0.7);
+  --card-border: rgba(43,122,75,0.15);
+  --glass-bg: rgba(255,255,255,0.12);
+  --glass-border: rgba(255,255,255,0.18);
+  --shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.12);
+  --gradient-1: linear-gradient(135deg, #2B7A4B 0%, #1e5a36 100%);
+  --gradient-2: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+  --gradient-hero: linear-gradient(135deg, #0a1f13 0%, #171717 40%, #1a2e1a 100%);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+html.dark {
+  --bg: #0d0d0d;
+  --bg-2: #171717;
+  --text: #f0f0f0;
+  --text-2: #aaa;
+  --card-bg: rgba(30,30,30,0.75);
+  --card-border: rgba(43,122,75,0.25);
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.4);
+  --gradient-2: linear-gradient(135deg, #0a1f13 0%, #111 50%, #0a1f13 100%);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:16px; scroll-behavior:smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  transition: background var(--transition), color var(--transition);
+}
+/* ── Progress Bar ── */
+#progress-bar {
+  position: fixed; top:0; left:0; height:3px; background: var(--gradient-1);
+  z-index: 1000; transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(43,122,75,0.5);
+}
+/* ── Controls ── */
+#controls {
+  position: fixed; top:12px; right:16px; z-index:999;
+  display:flex; gap:8px; align-items:center;
+}
+#slide-counter {
+  font-size:0.8rem; color:var(--text-2); font-weight:600;
+  background: var(--card-bg); backdrop-filter:blur(12px);
+  padding:6px 14px; border-radius:20px; border:1px solid var(--card-border);
+}
+.ctrl-btn {
+  width:36px; height:36px; border-radius:50%;
+  background: var(--card-bg); backdrop-filter:blur(12px);
+  border:1px solid var(--card-border); color:var(--text);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:1rem; transition: all var(--transition);
+}
+.ctrl-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); transform:scale(1.1); }
+/* ── Slides Container ── */
+#slides-container {
+  width:100vw; height:100vh; position:relative; overflow:hidden;
+}
+.slide {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 60px 40px 40px;
+  opacity:0; transform:translateX(60px); pointer-events:none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  overflow-y:auto;
+}
+.slide.active {
+  opacity:1; transform:translateX(0); pointer-events:all;
+}
+.slide.exit-left {
+  opacity:0; transform:translateX(-60px);
+}
+.slide-inner {
+  max-width:1100px; width:100%; margin:auto;
+}
+/* ── Typography ── */
+h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:800; line-height:1.1; letter-spacing:-0.03em; }
+h2 { font-size:clamp(1.6rem,4vw,2.6rem); font-weight:700; line-height:1.15; letter-spacing:-0.02em; margin-bottom:0.5em; }
+h3 { font-size:clamp(1.1rem,2.5vw,1.5rem); font-weight:600; line-height:1.3; }
+p, li { font-size:clamp(0.9rem,1.8vw,1.1rem); line-height:1.6; color:var(--text-2); }
+.green { color:var(--primary); }
+.subtitle { font-size:clamp(1rem,2.2vw,1.35rem); color:var(--text-2); font-weight:400; margin-top:0.5em; }
+.label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--primary); margin-bottom:0.5em; }
+/* ── Cards ── */
+.card {
+  background: var(--card-bg); backdrop-filter:blur(16px);
+  border:1px solid var(--card-border); border-radius:var(--radius);
+  padding:24px; transition: all var(--transition);
+  box-shadow: var(--shadow);
+}
+.card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:var(--primary); }
+.card-grid { display:grid; gap:16px; }
+.card-grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.card-grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+.card-grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); }
+/* ── Stat counters ── */
+.stat-number {
+  font-size:clamp(2rem,5vw,3.5rem); font-weight:800; color:var(--primary);
+  line-height:1;
+}
+.stat-label { font-size:0.9rem; color:var(--text-2); margin-top:4px; }
+.stats-row { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; margin:24px 0; }
+.stat-item { text-align:center; min-width:120px; }
+/* ── Icon circles ── */
+.icon-circle {
+  width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem; margin-bottom:12px;
+  background: linear-gradient(135deg, rgba(43,122,75,0.15), rgba(43,122,75,0.05));
+  color: var(--primary);
+}
+/* ── Tags / Badges ── */
+.badge {
+  display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600;
+  background:rgba(43,122,75,0.1); color:var(--primary); margin:3px;
+}
+.badge.blue { background:rgba(59,130,246,0.1); color:#3b82f6; }
+.badge.purple { background:rgba(139,92,246,0.1); color:#8b5cf6; }
+.badge.orange { background:rgba(249,115,22,0.1); color:#f97316; }
+.badge.red { background:rgba(239,68,68,0.1); color:#ef4444; }
+.badge.teal { background:rgba(20,184,166,0.1); color:#14b8a6; }
+/* ── Flip Card ── */
+.flip-card { perspective:800px; height:260px; cursor:pointer; }
+.flip-card-inner {
+  position:relative; width:100%; height:100%; transition:transform 0.6s;
+  transform-style:preserve-3d;
+}
+.flip-card:hover .flip-card-inner { transform:rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+  position:absolute; width:100%; height:100%; backface-visibility:hidden;
+  border-radius:var(--radius); padding:24px; display:flex; flex-direction:column; justify-content:center;
+  background: var(--card-bg); backdrop-filter:blur(16px);
+  border:1px solid var(--card-border); box-shadow:var(--shadow);
+}
+.flip-card-back { transform:rotateY(180deg); background:var(--gradient-1); color:#fff; }
+.flip-card-back p { color:rgba(255,255,255,0.85); }
+/* ── Flow / Timeline ── */
+.flow-row { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:8px; margin:20px 0; }
+.flow-node {
+  background:var(--card-bg); backdrop-filter:blur(12px); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:14px 18px; text-align:center;
+  transition: all var(--transition); min-width:120px;
+}
+.flow-node:hover { border-color:var(--primary); transform:scale(1.05); }
+.flow-arrow { color:var(--primary); font-size:1.4rem; font-weight:700; }
+/* ── Timeline ── */
+.timeline { position:relative; padding-left:30px; }
+.timeline::before {
+  content:''; position:absolute; left:11px; top:0; bottom:0; width:2px;
+  background: linear-gradient(to bottom, var(--primary), rgba(43,122,75,0.2));
+}
+.timeline-item { position:relative; margin-bottom:24px; }
+.timeline-item::before {
+  content:''; position:absolute; left:-24px; top:6px; width:14px; height:14px;
+  border-radius:50%; background:var(--primary); border:3px solid var(--bg);
+  box-shadow: 0 0 0 3px rgba(43,122,75,0.2);
+}
+.timeline-item h3 { font-size:1rem; }
+.timeline-item p { font-size:0.85rem; }
+/* ── Category grid (slide 12) ── */
+.cat-section { margin-bottom:16px; }
+.cat-title {
+  font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
+  margin-bottom:8px; padding:4px 10px; border-radius:6px; display:inline-block;
+}
+.cat-pages { display:flex; flex-wrap:wrap; gap:6px; }
+.cat-page {
+  font-size:0.7rem; padding:4px 10px; border-radius:6px;
+  background:var(--card-bg); border:1px solid var(--card-border);
+  transition: all 0.2s;
+}
+.cat-page:hover { border-color:var(--primary); transform:translateY(-2px); }
+/* ── Circular Progress ── */
+.circle-stat { text-align:center; }
+.circle-svg { width:90px; height:90px; transform:rotate(-90deg); }
+.circle-bg { fill:none; stroke:var(--gray-6); stroke-width:6; }
+html.dark .circle-bg { stroke:var(--dark-3); }
+.circle-fg { fill:none; stroke:var(--primary); stroke-width:6; stroke-linecap:round;
+  stroke-dasharray:251; stroke-dashoffset:251; transition: stroke-dashoffset 1.5s ease; }
+/* ── Particles (slide 1) ── */
+#particles {
+  position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden;
+}
+.particle {
+  position:absolute; border-radius:50%; opacity:0;
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  0% { opacity:0; transform:translateY(100vh) scale(0); }
+  10% { opacity:1; }
+  90% { opacity:1; }
+  100% { opacity:0; transform:translateY(-10vh) scale(1); }
+}
+/* ── Confetti (slide 16) ── */
+.confetti-piece {
+  position:absolute; width:10px; height:10px;
+  opacity:0; animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { opacity:1; transform:translateY(-20vh) rotate(0deg); }
+  100% { opacity:0; transform:translateY(100vh) rotate(720deg); }
+}
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(30px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50% { transform:scale(1.05); }
+}
+@keyframes shimmer {
+  0% { background-position:-200% center; }
+  100% { background-position:200% center; }
+}
+@keyframes typing {
+  from { width:0; }
+  to { width:100%; }
+}
+.animate-in { animation: fadeInUp 0.6s ease forwards; }
+.delay-1 { animation-delay:0.1s; opacity:0; }
+.delay-2 { animation-delay:0.2s; opacity:0; }
+.delay-3 { animation-delay:0.3s; opacity:0; }
+.delay-4 { animation-delay:0.4s; opacity:0; }
+.delay-5 { animation-delay:0.5s; opacity:0; }
+.delay-6 { animation-delay:0.6s; opacity:0; }
+/* ── Hero Slide ── */
+.hero-bg {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background: var(--gradient-hero);
+  z-index:0;
+}
+.hero-content { position:relative; z-index:1; text-align:center; color:#fff; }
+.hero-content h1 { color:#fff; }
+.hero-content .subtitle { color:rgba(255,255,255,0.7); }
+.logo-box {
+  width:100px; height:100px; border-radius:24px; background:var(--primary);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3.5rem; font-weight:900; color:#fff; margin:0 auto 24px;
+  box-shadow: 0 10px 40px rgba(43,122,75,0.4);
+  animation: pulse 3s ease infinite;
+}
+.start-hint {
+  margin-top:40px; font-size:0.9rem; color:rgba(255,255,255,0.4);
+  animation: fadeIn 1s ease 1.5s forwards; opacity:0;
+}
+/* ── Split Layout ── */
+.split { display:grid; grid-template-columns:1fr 1fr; gap:30px; align-items:start; }
+@media(max-width:768px) {
+  .split { grid-template-columns:1fr; }
+  .card-grid-3 { grid-template-columns:1fr; }
+  .card-grid-4 { grid-template-columns:1fr 1fr; }
+  .flow-row { flex-direction:column; }
+  .flow-arrow { transform:rotate(90deg); }
+  .slide { padding:60px 20px 20px; }
+  .flip-card { height:220px; }
+}
+/* ── Scrollbar ── */
+.slide::-webkit-scrollbar { width:4px; }
+.slide::-webkit-scrollbar-thumb { background:var(--gray-5); border-radius:4px; }
+html.dark .slide::-webkit-scrollbar-thumb { background:var(--gray-2); }
+/* ── Feature List ── */
+.feature-list { list-style:none; }
+.feature-list li {
+  padding:8px 0; border-bottom:1px solid var(--card-border);
+  display:flex; align-items:center; gap:10px; font-size:0.9rem;
+}
+.feature-list li::before { content:''; display:none; }
+.feature-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0;
+}
+/* ── Code bg animation ── */
+.code-bg {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  opacity:0.04; font-family:monospace; font-size:0.7rem; line-height:1.8;
+  color:var(--primary); overflow:hidden; pointer-events:none; padding:20px;
+  white-space:pre-wrap; word-break:break-all;
+}
+html.dark .code-bg { opacity:0.06; }
+/* ── Company logos (text-based) ── */
+.company-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.company-card {
+  background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:12px 8px; text-align:center;
+  font-weight:700; font-size:0.8rem; color:var(--text);
+  transition: all var(--transition);
+}
+.company-card:hover { border-color:var(--primary); transform:translateY(-3px); box-shadow:var(--shadow); }
+/* ── Navigation arrows ── */
+.nav-arrows {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; gap:12px; z-index:999;
+}
+.nav-btn {
+  width:44px; height:44px; border-radius:50%;
+  background:var(--card-bg); backdrop-filter:blur(12px);
+  border:1px solid var(--card-border); color:var(--text);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; transition:all var(--transition);
+}
+.nav-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.nav-btn:disabled { opacity:0.3; cursor:default; }
+.nav-btn:disabled:hover { background:var(--card-bg); color:var(--text); }
+/* ── Misc ── */
+.text-center { text-align:center; }
+.mt-1 { margin-top:8px; }
+.mt-2 { margin-top:16px; }
+.mt-3 { margin-top:24px; }
+.mb-2 { margin-bottom:16px; }
+.mb-3 { margin-bottom:24px; }
+.gap-sm { gap:12px; }
+.small { font-size:0.8rem; }
+.tiny { font-size:0.7rem; }
+.bold { font-weight:700; }
+.flex-center { display:flex; align-items:center; justify-content:center; }
+.inline-flex { display:inline-flex; align-items:center; gap:6px; }
+.scroll-area { max-height:55vh; overflow-y:auto; padding-right:8px; }
+</style>
+</head>
+<body>
+<div id="progress-bar" style="width:0%"></div>
+
+<div id="controls">
+  <span id="slide-counter">1/16</span>
+  <button class="ctrl-btn" id="dark-toggle" title="Modo oscuro">&#9790;</button>
+  <button class="ctrl-btn" id="fs-toggle" title="Pantalla completa">&#x26F6;</button>
+</div>
+
+<div class="nav-arrows">
+  <button class="nav-btn" id="prev-btn" disabled title="Anterior">&#8592;</button>
+  <button class="nav-btn" id="next-btn" title="Siguiente">&#8594;</button>
+</div>
+
+<div id="slides-container">
+
+<!-- ═══════ SLIDE 1: TITLE ═══════ -->
+<div class="slide active" data-slide="0">
+  <div class="hero-bg"></div>
+  <div id="particles"></div>
+  <div class="hero-content">
+    <div class="logo-box animate-in">P</div>
+    <h1 class="animate-in delay-1">Puente</h1>
+    <p class="subtitle animate-in delay-2" style="font-size:clamp(1rem,2.5vw,1.5rem);color:rgba(255,255,255,0.85);">La Red Profesional para Estudiantes Internacionales</p>
+    <p class="animate-in delay-3" style="color:rgba(255,255,255,0.6);margin-top:8px;">Plataforma de Mentoría Digital</p>
+    <div class="animate-in delay-4" style="margin-top:20px;">
+      <span class="badge" style="background:rgba(43,122,75,0.25);color:#4ade80;font-size:0.85rem;padding:6px 16px;">Propuesta tecnológica para FUE</span>
+    </div>
+    <p class="start-hint">Pulsa &rarr; para comenzar</p>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 2: EL PROBLEMA ═══════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">El desafío</p>
+    <h2 class="animate-in delay-1">El Problema</h2>
+    <div class="stat-number animate-in delay-2" style="font-size:clamp(2.5rem,6vw,4.5rem);margin:16px 0;">
+      <span class="counter" data-target="127000" data-suffix="+">0</span>
+    </div>
+    <p class="animate-in delay-2" style="font-size:1.1rem;margin-bottom:32px;">estudiantes internacionales en España sin apoyo profesional adecuado</p>
+    <div class="card-grid card-grid-2 animate-in delay-3" style="max-width:800px;margin:0 auto;">
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#127760;</div>
+        <h3>Barreras culturales y lingüísticas</h3>
+        <p class="small mt-1">Dificultad para integrarse en el entorno laboral español</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128188;</div>
+        <h3>Desconocimiento del mercado</h3>
+        <p class="small mt-1">Falta de información sobre oportunidades laborales</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#129309;</div>
+        <h3>Falta de red de contactos</h3>
+        <p class="small mt-1">Sin conexiones profesionales en el país de destino</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128220;</div>
+        <h3>Regulaciones migratorias</h3>
+        <p class="small mt-1">Complejidad de permisos de trabajo y residencia</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 3: LA SOLUCION ═══════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Nuestra propuesta</p>
+    <h2 class="animate-in delay-1">La Solución: <span class="green">Puente</span></h2>
+    <p class="subtitle animate-in delay-2">Una plataforma integral de mentoría que conecta talento internacional con oportunidades profesionales</p>
+    <div class="card-grid card-grid-3 mt-3 animate-in delay-3">
+      <div class="card text-center" style="padding:32px 20px;">
+        <div class="icon-circle" style="margin:0 auto 16px;width:56px;height:56px;font-size:1.6rem;">&#128101;</div>
+        <h3>Mentoría 1:1</h3>
+        <p class="small mt-1">Sesiones personalizadas con profesionales del sector que guían al estudiante</p>
+      </div>
+      <div class="card text-center" style="padding:32px 20px;">
+        <div class="icon-circle" style="margin:0 auto 16px;width:56px;height:56px;font-size:1.6rem;">&#127891;</div>
+        <h3>Talleres Grupales</h3>
+        <p class="small mt-1">Formación práctica en empleabilidad, CV, entrevistas y networking</p>
+      </div>
+      <div class="card text-center" style="padding:32px 20px;">
+        <div class="icon-circle" style="margin:0 auto 16px;width:56px;height:56px;font-size:1.6rem;">&#127970;</div>
+        <h3>Conexión con Empresas</h3>
+        <p class="small mt-1">Acceso directo a oportunidades en empresas colaboradoras</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 4: LO QUE HEMOS CONSTRUIDO ═══════ -->
+<div class="slide" data-slide="3">
+  <div class="code-bg" id="code-bg"></div>
+  <div class="slide-inner text-center" style="position:relative;z-index:1;">
+    <p class="label animate-in">Desarrollo completado</p>
+    <h2 class="animate-in delay-1">Lo que hemos construido</h2>
+    <div class="stats-row animate-in delay-2">
+      <div class="stat-item">
+        <div class="stat-number"><span class="counter" data-target="56">0</span></div>
+        <div class="stat-label">Páginas funcionales</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><span class="counter" data-target="17600" data-suffix="+">0</span></div>
+        <div class="stat-label">Líneas de código</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number"><span class="counter" data-target="3">0</span></div>
+        <div class="stat-label">Roles de usuario</div>
+      </div>
+    </div>
+    <div class="animate-in delay-3 mt-2">
+      <p class="bold mb-2">Stack tecnológico</p>
+      <div>
+        <span class="badge">Next.js 16</span>
+        <span class="badge blue">TypeScript</span>
+        <span class="badge purple">React 19</span>
+        <span class="badge teal">Tailwind CSS 4</span>
+        <span class="badge orange">Recharts</span>
+      </div>
+    </div>
+    <div class="card animate-in delay-4 mt-3" style="max-width:500px;margin-left:auto;margin-right:auto;text-align:left;font-family:monospace;font-size:0.8rem;line-height:1.8;background:var(--dark);color:#4ade80;border-color:var(--dark-3);">
+      <span style="color:#888;">$</span> npx create-next-app puente<br>
+      <span style="color:#888;">$</span> npm run dev<br>
+      <span style="color:#4ade80;">&#10003;</span> Ready on <span style="color:#60a5fa;">http://localhost:3000</span><br>
+      <span style="color:#4ade80;">&#10003;</span> 56 rutas compiladas exitosamente
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 5: ROLES ═══════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Acceso diferenciado</p>
+    <h2 class="animate-in delay-1">Roles de Usuario</h2>
+    <p class="subtitle animate-in delay-2 mb-3">Haz clic o pasa el cursor para ver las credenciales</p>
+    <div class="card-grid card-grid-3 animate-in delay-3">
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front text-center">
+            <div style="font-size:3rem;margin-bottom:12px;">&#128105;&#8205;&#127891;</div>
+            <h3>Estudiante</h3>
+            <p class="small mt-1">Acceso completo al programa de mentoría, talleres y ofertas</p>
+            <span class="badge mt-2">22 páginas</span>
+          </div>
+          <div class="flip-card-back text-center">
+            <h3 style="color:#fff;">Credenciales Demo</h3>
+            <p style="margin-top:12px;font-family:monospace;font-size:0.95rem;">priya@puente.io</p>
+            <p style="font-family:monospace;font-size:0.95rem;">demo1234</p>
+            <p style="margin-top:16px;font-size:0.8rem;color:rgba(255,255,255,0.7);">Dashboard, perfil, mentoría, empleos, comunidad</p>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front text-center">
+            <div style="font-size:3rem;margin-bottom:12px;">&#128105;&#8205;&#128188;</div>
+            <h3>Mentor/a</h3>
+            <p class="small mt-1">Dashboard de gestión de mentees y sesiones</p>
+            <span class="badge mt-2">2 páginas</span>
+          </div>
+          <div class="flip-card-back text-center">
+            <h3 style="color:#fff;">Credenciales Demo</h3>
+            <p style="margin-top:12px;font-family:monospace;font-size:0.95rem;">elena@puente.io</p>
+            <p style="font-family:monospace;font-size:0.95rem;">demo1234</p>
+            <p style="margin-top:16px;font-size:0.8rem;color:rgba(255,255,255,0.7);">Dashboard de mentor, gestión de sesiones</p>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front text-center">
+            <div style="font-size:3rem;margin-bottom:12px;">&#128119;</div>
+            <h3>Coordinador</h3>
+            <p class="small mt-1">Panel de administración completo del programa</p>
+            <span class="badge mt-2">9 páginas</span>
+          </div>
+          <div class="flip-card-back text-center">
+            <h3 style="color:#fff;">Credenciales Demo</h3>
+            <p style="margin-top:12px;font-family:monospace;font-size:0.95rem;">admin@puente.io</p>
+            <p style="font-family:monospace;font-size:0.95rem;">demo1234</p>
+            <p style="margin-top:16px;font-size:0.8rem;color:rgba(255,255,255,0.7);">Analytics, gestión, informes, configuración</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 6: FLUJO ESTUDIANTE ═══════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Experiencia del usuario</p>
+    <h2 class="animate-in delay-1">Flujo del Estudiante</h2>
+    <p class="subtitle animate-in delay-2 mb-3">Del registro al éxito profesional</p>
+    <div class="flow-row animate-in delay-3">
+      <div class="flow-node">
+        <div style="font-size:1.5rem;">&#127968;</div>
+        <strong class="small">Landing</strong>
+        <p class="tiny">Descubre Puente</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-node">
+        <div style="font-size:1.5rem;">&#128221;</div>
+        <strong class="small">Registro</strong>
+        <p class="tiny">Crear cuenta</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-node">
+        <div style="font-size:1.5rem;">&#9993;</div>
+        <strong class="small">Verificación</strong>
+        <p class="tiny">Email confirm</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-node">
+        <div style="font-size:1.5rem;">&#128100;</div>
+        <strong class="small">Perfil</strong>
+        <p class="tiny">Completar datos</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-node" style="border-color:var(--primary);background:rgba(43,122,75,0.08);">
+        <div style="font-size:1.5rem;">&#127919;</div>
+        <strong class="small green">Dashboard</strong>
+        <p class="tiny">Tu centro de control</p>
+      </div>
+    </div>
+    <div class="card-grid card-grid-2 animate-in delay-4 mt-3" style="max-width:700px;margin-left:auto;margin-right:auto;">
+      <div class="card" style="text-align:left;">
+        <h3 class="small green">Desde el Dashboard</h3>
+        <ul class="feature-list mt-1">
+          <li><span class="feature-dot"></span>Buscar y solicitar mentor</li>
+          <li><span class="feature-dot"></span>Reservar sesiones</li>
+          <li><span class="feature-dot"></span>Explorar ofertas de empleo</li>
+          <li><span class="feature-dot"></span>Participar en la comunidad</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align:left;">
+        <h3 class="small green">Progreso visible</h3>
+        <ul class="feature-list mt-1">
+          <li><span class="feature-dot"></span>Indicadores de completitud</li>
+          <li><span class="feature-dot"></span>Historial de sesiones</li>
+          <li><span class="feature-dot"></span>Tracker de aplicaciones</li>
+          <li><span class="feature-dot"></span>Certificados obtenidos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 7: PERFIL Y ONBOARDING ═══════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Onboarding completo</p>
+    <h2 class="animate-in delay-1">Perfil y Onboarding</h2>
+    <div class="card-grid card-grid-2 animate-in delay-2 mt-2" style="max-width:800px;margin-left:auto;margin-right:auto;">
+      <div class="card" style="text-align:left;">
+        <div class="inline-flex mb-2"><span class="badge">Paso 1</span><strong class="small">Registro</strong></div>
+        <p class="small">Selección de rol: Estudiante, Mentor o Coordinador. Formulario con validación en tiempo real.</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="inline-flex mb-2"><span class="badge blue">Paso 2</span><strong class="small">Verificación</strong></div>
+        <p class="small">Confirmación por email con enlace de activación. Pantalla de estado de verificación.</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="inline-flex mb-2"><span class="badge purple">Paso 3</span><strong class="small">Completar Perfil</strong></div>
+        <p class="small">Proceso guiado en 2 pasos: datos personales y preferencias profesionales.</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="inline-flex mb-2"><span class="badge teal">Resultado</span><strong class="small">Perfil Completo</strong></div>
+        <p class="small">5 pestañas: Mi Plan, Sobre Mí, Mentores, Actividad, Bandeja de entrada.</p>
+      </div>
+    </div>
+    <div class="animate-in delay-3 mt-3" style="max-width:400px;margin:0 auto;">
+      <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+        <span class="small bold">Completitud del perfil</span>
+        <span class="badge" style="font-size:0.9rem;">85%</span>
+      </div>
+      <div style="height:8px;background:var(--gray-6);border-radius:4px;margin-top:8px;overflow:hidden;">
+        <div class="progress-fill" data-width="85" style="height:100%;width:0%;background:var(--gradient-1);border-radius:4px;transition:width 1.5s ease;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 8: MENTORIA ═══════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Funcionalidad principal</p>
+    <h2 class="animate-in delay-1">Sistema de Mentoría</h2>
+    <div class="card-grid card-grid-3 animate-in delay-2 mt-2">
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128269;</div>
+        <h3 class="small">Solicitar Mentor</h3>
+        <p class="tiny mt-1">3 pasos: preferencias &rarr; matching inteligente &rarr; confirmación</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128197;</div>
+        <h3 class="small">Reservar Sesión</h3>
+        <p class="tiny mt-1">Calendario interactivo con selección de horarios disponibles</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128249;</div>
+        <h3 class="small">Sala de Videollamada</h3>
+        <p class="tiny mt-1">Cámara, micrófono, chat en tiempo real, compartir pantalla</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#11088;</div>
+        <h3 class="small">Valorar Sesión</h3>
+        <p class="tiny mt-1">Sistema de estrellas con feedback escrito detallado</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128221;</div>
+        <h3 class="small">Notas de Sesiones</h3>
+        <p class="tiny mt-1">Registro de apuntes, acuerdos y próximos pasos</p>
+      </div>
+      <div class="card" style="text-align:left;">
+        <div class="icon-circle">&#128196;</div>
+        <h3 class="small">Certificados</h3>
+        <p class="tiny mt-1">Generación automática al completar talleres</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 9: EMPLEOS Y EMPRESAS ═══════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-inner">
+    <div class="text-center">
+      <p class="label animate-in">Oportunidades profesionales</p>
+      <h2 class="animate-in delay-1">Empleos y Empresas</h2>
+    </div>
+    <div class="split animate-in delay-2 mt-2">
+      <div>
+        <h3 class="mb-2">&#128188; Empleos</h3>
+        <ul class="feature-list">
+          <li><span class="feature-dot"></span>Listado con filtros avanzados (sector, ubicación, tipo)</li>
+          <li><span class="feature-dot"></span>Vista detallada con postulación directa</li>
+          <li><span class="feature-dot"></span>Tracker de aplicaciones con estados</li>
+          <li><span class="feature-dot"></span>Alertas de nuevas ofertas compatibles</li>
+          <li><span class="feature-dot"></span>Guardado de ofertas favoritas</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="mb-2">&#127970; Empresas Colaboradoras</h3>
+        <div class="company-grid">
+          <div class="company-card">Accenture</div>
+          <div class="company-card">Cabify</div>
+          <div class="company-card">Santander</div>
+          <div class="company-card">Inditex</div>
+          <div class="company-card">Repsol</div>
+          <div class="company-card">Glovo</div>
+          <div class="company-card">Telefónica</div>
+          <div class="company-card">BBVA</div>
+        </div>
+        <p class="tiny mt-2" style="color:var(--text-2);">Perfiles de empresa detallados con cultura, beneficios y ofertas abiertas</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 10: COMUNIDAD ═══════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Conexión social</p>
+    <h2 class="animate-in delay-1">Comunidad y Social</h2>
+    <div class="split animate-in delay-2 mt-2">
+      <div class="card" style="text-align:left;">
+        <h3 class="small green mb-2">Scroll (Feed Social)</h3>
+        <ul class="feature-list">
+          <li><span class="feature-dot"></span>Publicaciones: Recurso, Pregunta, Logro, Consejo</li>
+          <li><span class="feature-dot"></span>Comentarios y likes</li>
+          <li><span class="feature-dot"></span>Grupos de estudio</li>
+          <li><span class="feature-dot"></span>Contenido curado por la comunidad</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align:left;">
+        <h3 class="small green mb-2">Conexiones</h3>
+        <ul class="feature-list">
+          <li><span class="feature-dot"></span>Mensajería directa entre usuarios</li>
+          <li><span class="feature-dot"></span>Perfiles públicos de estudiantes</li>
+          <li><span class="feature-dot"></span>Perfiles públicos de mentores</li>
+          <li><span class="feature-dot"></span>Recomendaciones y endorsements</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 11: ADMIN ═══════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Control total</p>
+    <h2 class="animate-in delay-1">Panel de Administración</h2>
+    <div class="card animate-in delay-2 mt-2" style="max-width:900px;margin:0 auto;text-align:left;">
+      <div class="card-grid card-grid-3 gap-sm">
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128200;</div>
+          <h3 class="small">Dashboard KPIs</h3>
+          <p class="tiny">Métricas clave en tiempo real</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128202;</div>
+          <h3 class="small">Analytics</h3>
+          <p class="tiny">Gráficos con Recharts</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128101;</div>
+          <h3 class="small">Gestión Estudiantes</h3>
+          <p class="tiny">CRUD completo</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128105;&#8205;&#128188;</div>
+          <h3 class="small">Gestión Mentores</h3>
+          <p class="tiny">Asignación y seguimiento</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128203;</div>
+          <h3 class="small">Solicitudes</h3>
+          <p class="tiny">Aprobación de mentorías</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#127891;</div>
+          <h3 class="small">Talleres</h3>
+          <p class="tiny">Creación y gestión</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#9993;</div>
+          <h3 class="small">Email Templates</h3>
+          <p class="tiny">Plantillas personalizables</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#9881;</div>
+          <h3 class="small">Configuración</h3>
+          <p class="tiny">Ajustes del programa</p>
+        </div>
+        <div style="padding:12px;">
+          <div class="icon-circle" style="width:36px;height:36px;font-size:1rem;">&#128209;</div>
+          <h3 class="small">Informes</h3>
+          <p class="tiny">Reportes de impacto</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 12: TODAS LAS PAGINAS ═══════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-inner">
+    <div class="text-center">
+      <p class="label animate-in">Cobertura completa</p>
+      <h2 class="animate-in delay-1">56 Páginas Funcionales</h2>
+    </div>
+    <div class="scroll-area animate-in delay-2 mt-2">
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(43,122,75,0.12);color:var(--primary);">&#127760; Públicas (10)</span>
+        <div class="cat-pages">
+          <span class="cat-page">Landing</span><span class="cat-page">Registro</span><span class="cat-page">Login</span>
+          <span class="cat-page">Empresas</span><span class="cat-page">Equipo</span><span class="cat-page">Contacto</span>
+          <span class="cat-page">Noticias</span><span class="cat-page">FAQ</span><span class="cat-page">Privacidad</span>
+          <span class="cat-page">Términos</span>
+        </div>
+      </div>
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(59,130,246,0.12);color:#3b82f6;">&#128105;&#8205;&#127891; Estudiante (22)</span>
+        <div class="cat-pages">
+          <span class="cat-page">Dashboard</span><span class="cat-page">Perfil</span><span class="cat-page">Editar Perfil</span>
+          <span class="cat-page">Completar Perfil</span><span class="cat-page">Talleres</span><span class="cat-page">Detalle Taller</span>
+          <span class="cat-page">Certificado</span><span class="cat-page">Empleos</span><span class="cat-page">Detalle Empleo</span>
+          <span class="cat-page">Tracker</span><span class="cat-page">Mentoría</span><span class="cat-page">Solicitar Mentor</span>
+          <span class="cat-page">Reservar Sesión</span><span class="cat-page">Sala Video</span><span class="cat-page">Valorar Sesión</span>
+          <span class="cat-page">Notas</span><span class="cat-page">Scroll (Feed)</span><span class="cat-page">Crear Post</span>
+          <span class="cat-page">Mensajes</span><span class="cat-page">Calendario</span><span class="cat-page">Notificaciones</span>
+          <span class="cat-page">Configuración</span>
+        </div>
+      </div>
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">&#128105;&#8205;&#128188; Mentor (2)</span>
+        <div class="cat-pages">
+          <span class="cat-page">Dashboard Mentor</span><span class="cat-page">Sesiones</span>
+        </div>
+      </div>
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(249,115,22,0.12);color:#f97316;">&#128119; Admin (9)</span>
+        <div class="cat-pages">
+          <span class="cat-page">Dashboard</span><span class="cat-page">Analytics</span><span class="cat-page">Estudiantes</span>
+          <span class="cat-page">Mentores</span><span class="cat-page">Solicitudes</span><span class="cat-page">Talleres</span>
+          <span class="cat-page">Email Templates</span><span class="cat-page">Configuración</span><span class="cat-page">Informes</span>
+        </div>
+      </div>
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(107,114,128,0.12);color:#6b7280;">&#9881; Infraestructura (4)</span>
+        <div class="cat-pages">
+          <span class="cat-page">404 Not Found</span><span class="cat-page">Loading</span>
+          <span class="cat-page">Nav Móvil</span><span class="cat-page">Onboarding</span>
+        </div>
+      </div>
+      <div class="cat-section">
+        <span class="cat-title" style="background:rgba(20,184,166,0.12);color:#14b8a6;">&#129309; Perfiles Públicos (9)</span>
+        <div class="cat-pages">
+          <span class="cat-page">Perfil Estudiante</span><span class="cat-page">Perfil Mentor</span>
+          <span class="cat-page">Perfil Empresa</span><span class="cat-page">Grupos</span>
+          <span class="cat-page">Detalle Grupo</span><span class="cat-page">Detalle Noticia</span>
+          <span class="cat-page">Verificación Email</span><span class="cat-page">Recuperar Contraseña</span>
+          <span class="cat-page">Endorsements</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 13: KPIs ═══════ -->
+<div class="slide" data-slide="12">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Métricas de impacto</p>
+    <h2 class="animate-in delay-1">KPIs del Programa <span class="small" style="font-weight:400;color:var(--text-2);">(datos simulados)</span></h2>
+    <div class="card-grid card-grid-3 animate-in delay-2 mt-3" style="max-width:800px;margin-left:auto;margin-right:auto;">
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="85"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="127">0</span></div>
+        <div class="stat-label">Estudiantes activos</div>
+      </div>
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="60"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="24">0</span></div>
+        <div class="stat-label">Mentores profesionales</div>
+      </div>
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="78"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="78" data-suffix="%">0</span></div>
+        <div class="stat-label">Tasa de colocación</div>
+      </div>
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="92"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="23">0</span></div>
+        <div class="stat-label">Países representados</div>
+      </div>
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="75"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="384">0</span></div>
+        <div class="stat-label">Sesiones realizadas</div>
+      </div>
+      <div class="card text-center circle-stat">
+        <svg class="circle-svg" viewBox="0 0 90 90"><circle class="circle-bg" cx="45" cy="45" r="40"/><circle class="circle-fg" cx="45" cy="45" r="40" data-percent="92"/></svg>
+        <div class="stat-number" style="font-size:1.8rem;margin-top:8px;"><span class="counter" data-target="92">0</span></div>
+        <div class="stat-label">NPS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 14: TECNOLOGIA ═══════ -->
+<div class="slide" data-slide="13">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Arquitectura</p>
+    <h2 class="animate-in delay-1">Tecnología</h2>
+    <div class="card animate-in delay-2 mt-2" style="max-width:700px;margin:0 auto;">
+      <div class="card-grid card-grid-2 gap-sm" style="text-align:left;">
+        <div>
+          <p class="tiny bold" style="color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;">Frontend</p>
+          <div class="mt-1"><span class="badge">Next.js 16</span> <span class="badge blue">React 19</span> <span class="badge purple">TypeScript</span></div>
+        </div>
+        <div>
+          <p class="tiny bold" style="color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;">Estilos</p>
+          <div class="mt-1"><span class="badge teal">Tailwind CSS 4</span></div>
+        </div>
+        <div>
+          <p class="tiny bold" style="color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;">Gráficos</p>
+          <div class="mt-1"><span class="badge orange">Recharts</span></div>
+        </div>
+        <div>
+          <p class="tiny bold" style="color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;">Despliegue</p>
+          <div class="mt-1"><span class="badge">Vercel</span> <span class="badge">Analytics</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-grid card-grid-2 animate-in delay-3 mt-2" style="max-width:700px;margin-left:auto;margin-right:auto;">
+      <div class="card" style="text-align:left;border-left:3px solid var(--primary);">
+        <h3 class="small">Zero backend dependencies</h3>
+        <p class="tiny mt-1">Todo funciona con datos mock. La aplicación es 100% funcional sin servidor.</p>
+      </div>
+      <div class="card" style="text-align:left;border-left:3px solid #3b82f6;">
+        <h3 class="small">Listo para integrar</h3>
+        <p class="tiny mt-1">Compatible con Supabase, Firebase o cualquier API REST.</p>
+      </div>
+    </div>
+    <div class="animate-in delay-4 mt-3">
+      <p class="small" style="color:var(--text-2);">&#128279; puente-mentorship.vercel.app</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 15: PROXIMOS PASOS ═══════ -->
+<div class="slide" data-slide="14">
+  <div class="slide-inner text-center">
+    <p class="label animate-in">Hoja de ruta</p>
+    <h2 class="animate-in delay-1">Próximos Pasos</h2>
+    <div class="animate-in delay-2 mt-3" style="max-width:600px;margin:0 auto;text-align:left;">
+      <div class="timeline">
+        <div class="timeline-item">
+          <span class="badge" style="margin-bottom:4px;">Fase 1</span>
+          <h3>Backend + Base de datos</h3>
+          <p class="tiny">Integración con Supabase o Firebase para persistencia de datos real</p>
+        </div>
+        <div class="timeline-item">
+          <span class="badge blue" style="margin-bottom:4px;">Fase 2</span>
+          <h3>Autenticación real</h3>
+          <p class="tiny">OAuth (Google, LinkedIn), verificación por email, recuperación de contraseña</p>
+        </div>
+        <div class="timeline-item">
+          <span class="badge purple" style="margin-bottom:4px;">Fase 3</span>
+          <h3>Integración con LinkedIn API</h3>
+          <p class="tiny">Importar perfiles, compartir logros, networking profesional</p>
+        </div>
+        <div class="timeline-item">
+          <span class="badge orange" style="margin-bottom:4px;">Fase 4</span>
+          <h3>Notificaciones push + email</h3>
+          <p class="tiny">Recordatorios de sesiones, alertas de ofertas, actualizaciones</p>
+        </div>
+        <div class="timeline-item">
+          <span class="badge teal" style="margin-bottom:4px;">Fase 5</span>
+          <h3>App móvil</h3>
+          <p class="tiny">React Native para iOS y Android con experiencia nativa</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 16: CIERRE ═══════ -->
+<div class="slide" data-slide="15">
+  <div class="hero-bg"></div>
+  <div id="confetti-container" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:1;"></div>
+  <div class="hero-content" style="z-index:2;">
+    <div class="logo-box animate-in" style="width:80px;height:80px;font-size:2.8rem;border-radius:20px;">P</div>
+    <h2 class="animate-in delay-1" style="color:#fff;font-size:clamp(2rem,5vw,3rem);">¿Preguntas?</h2>
+    <div class="animate-in delay-2 mt-3" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+      <div class="card" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);backdrop-filter:blur(12px);min-width:200px;">
+        <p class="tiny bold" style="color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Demo en vivo</p>
+        <p style="color:#4ade80;font-size:0.85rem;font-weight:600;margin-top:4px;">puente-mentorship.vercel.app</p>
+      </div>
+      <div class="card" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);backdrop-filter:blur(12px);min-width:200px;">
+        <p class="tiny bold" style="color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Código fuente</p>
+        <p style="color:#60a5fa;font-size:0.85rem;font-weight:600;margin-top:4px;">puente-mentorship.vercel.app</p>
+      </div>
+    </div>
+    <div class="card animate-in delay-3 mt-3" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);backdrop-filter:blur(12px);max-width:400px;margin-left:auto;margin-right:auto;">
+      <p class="tiny bold" style="color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Credenciales demo</p>
+      <div style="font-family:monospace;font-size:0.8rem;line-height:2;color:rgba(255,255,255,0.85);">
+        <div>&#128105;&#8205;&#127891; priya@puente.io / demo1234 <span style="color:var(--gray-3);">(Estudiante)</span></div>
+        <div>&#128105;&#8205;&#128188; elena@puente.io / demo1234 <span style="color:var(--gray-3);">(Mentora)</span></div>
+        <div>&#128119; admin@puente.io / demo1234 <span style="color:var(--gray-3);">(Admin)</span></div>
+      </div>
+    </div>
+    <h1 class="animate-in delay-4" style="color:#fff;margin-top:32px;font-size:clamp(2.5rem,6vw,4rem);">Gracias</h1>
+  </div>
+</div>
+
+</div><!-- end slides-container -->
+
+<script>
+(function(){
+  // ── State ──
+  const TOTAL = 16;
+  let current = 0;
+  let transitioning = false;
+  const slides = document.querySelectorAll('.slide');
+  const progressBar = document.getElementById('progress-bar');
+  const counter = document.getElementById('slide-counter');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+
+  // ── Navigation ──
+  function goTo(n) {
+    if (n < 0 || n >= TOTAL || n === current || transitioning) return;
+    transitioning = true;
+    const dir = n > current ? 1 : -1;
+    const oldSlide = slides[current];
+    const newSlide = slides[n];
+
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add(dir > 0 ? 'exit-left' : '');
+    oldSlide.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+    oldSlide.style.opacity = '0';
+
+    newSlide.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+    newSlide.style.opacity = '0';
+    newSlide.classList.add('active');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        newSlide.style.transform = 'translateX(0)';
+        newSlide.style.opacity = '1';
+      });
+    });
+
+    current = n;
+    updateUI();
+    activateSlide(n);
+
+    setTimeout(() => {
+      oldSlide.classList.remove('exit-left');
+      oldSlide.style.transform = '';
+      oldSlide.style.opacity = '';
+      transitioning = false;
+    }, 550);
+  }
+
+  function updateUI() {
+    progressBar.style.width = ((current + 1) / TOTAL * 100) + '%';
+    counter.textContent = (current + 1) + '/' + TOTAL;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === TOTAL - 1;
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  // ── Keyboard ──
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+    else if (e.key === 'Escape') toggleFS();
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); goTo(TOTAL - 1); }
+  });
+
+  // ── Touch / Swipe ──
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      dx < 0 ? next() : prev();
+    }
+  }, {passive:true});
+
+  // ── Dark Mode ──
+  const darkBtn = document.getElementById('dark-toggle');
+  darkBtn.addEventListener('click', function() {
+    document.documentElement.classList.toggle('dark');
+    darkBtn.textContent = document.documentElement.classList.contains('dark') ? '\u2600' : '\u263E';
+  });
+
+  // ── Fullscreen ──
+  const fsBtn = document.getElementById('fs-toggle');
+  function toggleFS() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen().catch(()=>{});
+    }
+  }
+  fsBtn.addEventListener('click', toggleFS);
+
+  // ── Animated Counters ──
+  function animateCounters(slide) {
+    const counters = slide.querySelectorAll('.counter:not(.counted)');
+    counters.forEach(function(el) {
+      el.classList.add('counted');
+      const target = parseInt(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const duration = 1500;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const val = Math.round(eased * target);
+        el.textContent = val.toLocaleString('es-ES') + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  // ── Circle Progress ──
+  function animateCircles(slide) {
+    const circles = slide.querySelectorAll('.circle-fg:not(.animated)');
+    circles.forEach(function(c) {
+      c.classList.add('animated');
+      const pct = parseInt(c.dataset.percent) || 0;
+      const circumference = 2 * Math.PI * 40; // r=40
+      const offset = circumference - (pct / 100) * circumference;
+      c.style.strokeDasharray = circumference;
+      c.style.strokeDashoffset = circumference;
+      setTimeout(function() {
+        c.style.strokeDashoffset = offset;
+      }, 200);
+    });
+  }
+
+  // ── Progress fills ──
+  function animateProgressFills(slide) {
+    const fills = slide.querySelectorAll('.progress-fill:not(.filled)');
+    fills.forEach(function(f) {
+      f.classList.add('filled');
+      const w = f.dataset.width || 0;
+      setTimeout(function() { f.style.width = w + '%'; }, 300);
+    });
+  }
+
+  // ── Confetti ──
+  function spawnConfetti() {
+    const container = document.getElementById('confetti-container');
+    if (!container || container.dataset.done) return;
+    container.dataset.done = '1';
+    const colors = ['#2B7A4B','#4ade80','#3b82f6','#8b5cf6','#f97316','#ef4444','#14b8a6','#facc15'];
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.top = '-5%';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (6 + Math.random() * 8) + 'px';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+      piece.style.animationDelay = (Math.random() * 2) + 's';
+      container.appendChild(piece);
+    }
+  }
+
+  // ── Particles (slide 1) ──
+  function createParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 3 + Math.random() * 6;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = Math.random() > 0.5 ? 'rgba(43,122,75,0.4)' : 'rgba(74,222,128,0.3)';
+      p.style.animationDuration = (8 + Math.random() * 15) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      container.appendChild(p);
+    }
+  }
+  createParticles();
+
+  // ── Code background (slide 4) ──
+  function fillCodeBg() {
+    const el = document.getElementById('code-bg');
+    if (!el) return;
+    const lines = [
+      'export default function Dashboard() {',
+      '  const [user, setUser] = useState<User>()',
+      '  const { mentors, sessions } = useMentorship()',
+      '  return (<main className="flex min-h-screen">',
+      '    <Sidebar role={user.role} />',
+      '    <div className="flex-1 p-6">',
+      '      <StatsGrid stats={kpis} />',
+      '      <SessionCalendar sessions={sessions} />',
+      '      <MentorCard mentor={activeMentor} />',
+      '    </div>',
+      '  </main>)',
+      '}',
+      '',
+      'interface Session { id: string; date: Date; }',
+      'const api = { fetchStudents: async () => {} }',
+      'type Role = "student" | "mentor" | "admin"',
+    ];
+    let text = '';
+    for (let i = 0; i < 40; i++) text += lines[i % lines.length] + '\n';
+    el.textContent = text;
+  }
+  fillCodeBg();
+
+  // ── Activate slide features ──
+  function activateSlide(n) {
+    const slide = slides[n];
+    animateCounters(slide);
+    animateCircles(slide);
+    animateProgressFills(slide);
+    if (n === TOTAL - 1) setTimeout(spawnConfetti, 600);
+  }
+
+  // Init first slide
+  updateUI();
+  activateSlide(0);
+})();
+</script>
+</body>
+</html>
