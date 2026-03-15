@@ -90,6 +90,8 @@ function CompletarPerfilForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const username = searchParams.get("username") || "";
+  const role = searchParams.get("role") || "estudiante";
+  const isMentor = role === "mentor";
 
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -101,6 +103,11 @@ function CompletarPerfilForm() {
   const [bio, setBio] = useState("");
   const [region, setRegion] = useState("");
   const [university, setUniversity] = useState("");
+
+  // Mentor-specific fields
+  const [company, setCompany] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [yearsExperience, setYearsExperience] = useState("");
 
   // Step 2: Interests
   const [interests, setInterests] = useState<string[]>([]);
@@ -153,7 +160,11 @@ function CompletarPerfilForm() {
 
   const handleStep2Submit = () => {
     if (interests.length >= 3) {
-      router.push(`/perfil/${username || "usuario"}`);
+      if (isMentor) {
+        router.push("/mentor/dashboard");
+      } else {
+        router.push(`/perfil/${username || "usuario"}`);
+      }
     }
   };
 
@@ -246,11 +257,18 @@ function CompletarPerfilForm() {
               <>
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold mb-1">
-                    Bienvenido/a a Puente
+                    {isMentor ? "Bienvenido/a como Mentor/a" : "Bienvenido/a a Puente"}
                   </h2>
                   <p className="text-sm text-[var(--gray-500)]">
-                    Primero lo primero, cuéntanos un poco sobre ti.
+                    {isMentor
+                      ? "Cuéntanos sobre tu experiencia profesional para conectarte con estudiantes."
+                      : "Primero lo primero, cuéntanos un poco sobre ti."}
                   </p>
+                  {isMentor && (
+                    <span className="inline-block mt-2 text-xs bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
+                      Registro como Mentor/a
+                    </span>
+                  )}
                 </div>
 
                 {/* Photo upload */}
@@ -351,38 +369,90 @@ function CompletarPerfilForm() {
                     </p>
                   </div>
 
-                  {/* Region */}
-                  <div>
-                    <label className="block text-sm text-[var(--gray-600)] mb-1">
-                      Región de origen *
-                    </label>
-                    <select
-                      value={region}
-                      onChange={(e) => setRegion(e.target.value)}
-                      className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors bg-white"
-                    >
-                      <option value="">Selecciona tu región</option>
-                      {REGIONS.map((r) => (
-                        <option key={r} value={r}>
-                          {r}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {isMentor ? (
+                    <>
+                      {/* Company */}
+                      <div>
+                        <label className="block text-sm text-[var(--gray-600)] mb-1">
+                          Empresa *
+                        </label>
+                        <input
+                          type="text"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          placeholder="Ej: Accenture España"
+                          className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
+                        />
+                      </div>
 
-                  {/* University */}
-                  <div>
-                    <label className="block text-sm text-[var(--gray-600)] mb-1">
-                      Universidad en España
-                    </label>
-                    <input
-                      type="text"
-                      value={university}
-                      onChange={(e) => setUniversity(e.target.value)}
-                      placeholder="Ej: Universidad Complutense de Madrid"
-                      className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
-                    />
-                  </div>
+                      {/* Job title */}
+                      <div>
+                        <label className="block text-sm text-[var(--gray-600)] mb-1">
+                          Cargo actual *
+                        </label>
+                        <input
+                          type="text"
+                          value={jobTitle}
+                          onChange={(e) => setJobTitle(e.target.value)}
+                          placeholder="Ej: Directora de RRHH"
+                          className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
+                        />
+                      </div>
+
+                      {/* Years of experience */}
+                      <div>
+                        <label className="block text-sm text-[var(--gray-600)] mb-1">
+                          Años de experiencia
+                        </label>
+                        <select
+                          value={yearsExperience}
+                          onChange={(e) => setYearsExperience(e.target.value)}
+                          className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors bg-white"
+                        >
+                          <option value="">Selecciona</option>
+                          <option value="1-3">1-3 años</option>
+                          <option value="3-5">3-5 años</option>
+                          <option value="5-10">5-10 años</option>
+                          <option value="10+">10+ años</option>
+                        </select>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Region */}
+                      <div>
+                        <label className="block text-sm text-[var(--gray-600)] mb-1">
+                          Región de origen *
+                        </label>
+                        <select
+                          value={region}
+                          onChange={(e) => setRegion(e.target.value)}
+                          className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors bg-white"
+                        >
+                          <option value="">Selecciona tu región</option>
+                          {REGIONS.map((r) => (
+                            <option key={r} value={r}>
+                              {r}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* University */}
+                      <div>
+                        <label className="block text-sm text-[var(--gray-600)] mb-1">
+                          Universidad en España
+                        </label>
+                        <input
+                          type="text"
+                          value={university}
+                          onChange={(e) => setUniversity(e.target.value)}
+                          placeholder="Ej: Universidad Complutense de Madrid"
+                          className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   {/* Username */}
                   <div>
@@ -441,12 +511,18 @@ function CompletarPerfilForm() {
               <>
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold mb-1">
-                    Bienvenido/a a Puente
+                    {isMentor ? "Áreas de Especialización" : "Bienvenido/a a Puente"}
                   </h2>
                   <p className="text-sm text-[var(--gray-500)]">
-                    Añade tus intereses y objetivos profesionales para
-                    personalizar tu experiencia en el programa.
+                    {isMentor
+                      ? "Selecciona las áreas en las que puedes guiar a estudiantes internacionales."
+                      : "Añade tus intereses y objetivos profesionales para personalizar tu experiencia en el programa."}
                   </p>
+                  {isMentor && (
+                    <span className="inline-block mt-2 text-xs bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
+                      Registro como Mentor/a
+                    </span>
+                  )}
                 </div>
 
                 {/* Search input */}
@@ -560,7 +636,7 @@ function CompletarPerfilForm() {
                   disabled={interests.length < 3}
                   className="w-full bg-[var(--primary)] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
                 >
-                  Añadir intereses →
+                  {isMentor ? "Completar registro de mentor →" : "Añadir intereses →"}
                 </button>
               </>
             )}

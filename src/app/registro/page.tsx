@@ -10,6 +10,7 @@ function RegistroForm() {
   const searchParams = useSearchParams();
   const reservedUsername = searchParams.get("username") || "";
 
+  const [role, setRole] = useState<"estudiante" | "mentor">("estudiante");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +37,7 @@ function RegistroForm() {
     setLoading(true);
     setTimeout(() => {
       router.push(
-        `/verificar?email=${encodeURIComponent(email)}&username=${encodeURIComponent(reservedUsername)}`
+        `/verificar?email=${encodeURIComponent(email)}&username=${encodeURIComponent(reservedUsername)}&role=${role}`
       );
     }, 1500);
   };
@@ -159,6 +160,45 @@ function RegistroForm() {
                 Crea tu perfil para acceder al programa de mentoría.
               </p>
             )}
+
+            {/* Role selector */}
+            <div className="mb-6">
+              <label className="block text-sm text-[var(--gray-600)] mb-2">
+                ¿Cómo quieres participar?
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("estudiante")}
+                  className={`border rounded-xl p-4 text-left transition-all ${
+                    role === "estudiante"
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-1 ring-[var(--primary)]"
+                      : "border-[var(--gray-200)] hover:border-[var(--gray-400)]"
+                  }`}
+                >
+                  <span className="text-lg block mb-1">🎓</span>
+                  <p className="text-sm font-semibold">Estudiante</p>
+                  <p className="text-xs text-[var(--gray-400)]">
+                    Busco mentoría y oportunidades
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("mentor")}
+                  className={`border rounded-xl p-4 text-left transition-all ${
+                    role === "mentor"
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-1 ring-[var(--primary)]"
+                      : "border-[var(--gray-200)] hover:border-[var(--gray-400)]"
+                  }`}
+                >
+                  <span className="text-lg block mb-1">🤝</span>
+                  <p className="text-sm font-semibold">Mentor/a</p>
+                  <p className="text-xs text-[var(--gray-400)]">
+                    Quiero guiar a estudiantes
+                  </p>
+                </button>
+              </div>
+            </div>
 
             {/* Google OAuth */}
             <button

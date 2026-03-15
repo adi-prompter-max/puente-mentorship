@@ -10,6 +10,7 @@ function VerificarForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "tu@correo.com";
   const username = searchParams.get("username") || "";
+  const role = searchParams.get("role") || "estudiante";
 
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<
@@ -29,7 +30,7 @@ function VerificarForm() {
       setStatus("success");
       setTimeout(() => {
         router.push(
-          `/perfil/completar?username=${encodeURIComponent(username)}`
+          `/perfil/completar?username=${encodeURIComponent(username)}&role=${role}`
         );
       }, 500);
     }, 1500);
