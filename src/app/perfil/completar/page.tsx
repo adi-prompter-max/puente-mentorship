@@ -92,6 +92,7 @@ function CompletarPerfilForm() {
   const username = searchParams.get("username") || "";
   const role = searchParams.get("role") || "estudiante";
   const isMentor = role === "mentor";
+  const isAdmin = role === "admin";
 
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -160,7 +161,9 @@ function CompletarPerfilForm() {
 
   const handleStep2Submit = () => {
     if (interests.length >= 3) {
-      if (isMentor) {
+      if (isAdmin) {
+        router.push("/admin");
+      } else if (isMentor) {
         router.push("/mentor/dashboard");
       } else {
         router.push(`/perfil/${username || "usuario"}`);
@@ -257,16 +260,26 @@ function CompletarPerfilForm() {
               <>
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold mb-1">
-                    {isMentor ? "Bienvenido/a como Mentor/a" : "Bienvenido/a a Puente"}
+                    {isAdmin
+                      ? "Configuración de Coordinador"
+                      : isMentor
+                      ? "Bienvenido/a como Mentor/a"
+                      : "Bienvenido/a a Puente"}
                   </h2>
                   <p className="text-sm text-[var(--gray-500)]">
-                    {isMentor
+                    {isAdmin
+                      ? "Configura tu perfil de coordinador del programa Puente."
+                      : isMentor
                       ? "Cuéntanos sobre tu experiencia profesional para conectarte con estudiantes."
                       : "Primero lo primero, cuéntanos un poco sobre ti."}
                   </p>
-                  {isMentor && (
-                    <span className="inline-block mt-2 text-xs bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
-                      Registro como Mentor/a
+                  {(isMentor || isAdmin) && (
+                    <span className={`inline-block mt-2 text-xs px-3 py-1 rounded-full font-medium ${
+                      isAdmin
+                        ? "bg-rose-50 text-rose-600"
+                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    }`}>
+                      {isAdmin ? "Registro como Coordinador/a" : "Registro como Mentor/a"}
                     </span>
                   )}
                 </div>
@@ -369,32 +382,32 @@ function CompletarPerfilForm() {
                     </p>
                   </div>
 
-                  {isMentor ? (
+                  {(isMentor || isAdmin) ? (
                     <>
-                      {/* Company */}
+                      {/* Company / Organization */}
                       <div>
                         <label className="block text-sm text-[var(--gray-600)] mb-1">
-                          Empresa *
+                          {isAdmin ? "Organización *" : "Empresa *"}
                         </label>
                         <input
                           type="text"
                           value={company}
                           onChange={(e) => setCompany(e.target.value)}
-                          placeholder="Ej: Accenture España"
+                          placeholder={isAdmin ? "Ej: Fundación Universidad-Empresa" : "Ej: Accenture España"}
                           className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
                         />
                       </div>
 
-                      {/* Job title */}
+                      {/* Job title / Role */}
                       <div>
                         <label className="block text-sm text-[var(--gray-600)] mb-1">
-                          Cargo actual *
+                          {isAdmin ? "Rol en el programa *" : "Cargo actual *"}
                         </label>
                         <input
                           type="text"
                           value={jobTitle}
                           onChange={(e) => setJobTitle(e.target.value)}
-                          placeholder="Ej: Directora de RRHH"
+                          placeholder={isAdmin ? "Ej: Coordinador/a del Programa" : "Ej: Directora de RRHH"}
                           className="w-full border border-[var(--gray-300)] rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[var(--primary)] transition-colors"
                         />
                       </div>
@@ -511,16 +524,26 @@ function CompletarPerfilForm() {
               <>
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold mb-1">
-                    {isMentor ? "Áreas de Especialización" : "Bienvenido/a a Puente"}
+                    {isAdmin
+                      ? "Áreas del Programa"
+                      : isMentor
+                      ? "Áreas de Especialización"
+                      : "Bienvenido/a a Puente"}
                   </h2>
                   <p className="text-sm text-[var(--gray-500)]">
-                    {isMentor
+                    {isAdmin
+                      ? "Selecciona las áreas del programa que coordinarás."
+                      : isMentor
                       ? "Selecciona las áreas en las que puedes guiar a estudiantes internacionales."
                       : "Añade tus intereses y objetivos profesionales para personalizar tu experiencia en el programa."}
                   </p>
-                  {isMentor && (
-                    <span className="inline-block mt-2 text-xs bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
-                      Registro como Mentor/a
+                  {(isMentor || isAdmin) && (
+                    <span className={`inline-block mt-2 text-xs px-3 py-1 rounded-full font-medium ${
+                      isAdmin
+                        ? "bg-rose-50 text-rose-600"
+                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    }`}>
+                      {isAdmin ? "Registro como Coordinador/a" : "Registro como Mentor/a"}
                     </span>
                   )}
                 </div>
@@ -636,7 +659,11 @@ function CompletarPerfilForm() {
                   disabled={interests.length < 3}
                   className="w-full bg-[var(--primary)] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
                 >
-                  {isMentor ? "Completar registro de mentor →" : "Añadir intereses →"}
+                  {isAdmin
+                    ? "Acceder al panel de coordinación →"
+                    : isMentor
+                    ? "Completar registro de mentor →"
+                    : "Añadir intereses →"}
                 </button>
               </>
             )}

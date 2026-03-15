@@ -10,7 +10,7 @@ function RegistroForm() {
   const searchParams = useSearchParams();
   const reservedUsername = searchParams.get("username") || "";
 
-  const [role, setRole] = useState<"estudiante" | "mentor">("estudiante");
+  const [role, setRole] = useState<"estudiante" | "mentor" | "admin">("estudiante");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -166,7 +166,7 @@ function RegistroForm() {
               <label className="block text-sm text-[var(--gray-600)] mb-2">
                 ¿Cómo quieres participar?
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setRole("estudiante")}
@@ -179,7 +179,7 @@ function RegistroForm() {
                   <span className="text-lg block mb-1">🎓</span>
                   <p className="text-sm font-semibold">Estudiante</p>
                   <p className="text-xs text-[var(--gray-400)]">
-                    Busco mentoría y oportunidades
+                    Busco mentoría
                   </p>
                 </button>
                 <button
@@ -194,7 +194,22 @@ function RegistroForm() {
                   <span className="text-lg block mb-1">🤝</span>
                   <p className="text-sm font-semibold">Mentor/a</p>
                   <p className="text-xs text-[var(--gray-400)]">
-                    Quiero guiar a estudiantes
+                    Guiar estudiantes
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("admin")}
+                  className={`border rounded-xl p-4 text-left transition-all ${
+                    role === "admin"
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-1 ring-[var(--primary)]"
+                      : "border-[var(--gray-200)] hover:border-[var(--gray-400)]"
+                  }`}
+                >
+                  <span className="text-lg block mb-1">⚙️</span>
+                  <p className="text-sm font-semibold">Coordinador</p>
+                  <p className="text-xs text-[var(--gray-400)]">
+                    Gestionar programa
                   </p>
                 </button>
               </div>
