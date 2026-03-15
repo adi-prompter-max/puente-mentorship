@@ -1023,9 +1023,7 @@ html.dark .code-bg { opacity:0.06; }
   const nextBtn = document.getElementById('next-btn');
 
   // ── Navigation ──
-  let skipHashUpdate = false;
-
-  function goTo(n, fromPopState) {
+  function goTo(n) {
     if (n < 0 || n >= TOTAL || n === current || transitioning) return;
     transitioning = true;
     const dir = n > current ? 1 : -1;
@@ -1033,7 +1031,6 @@ html.dark .code-bg { opacity:0.06; }
     const newSlide = slides[n];
 
     oldSlide.classList.remove('active');
-    oldSlide.classList.add(dir > 0 ? 'exit-left' : '');
     oldSlide.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
     oldSlide.style.opacity = '0';
 
@@ -1052,49 +1049,12 @@ html.dark .code-bg { opacity:0.06; }
     updateUI();
     activateSlide(n);
 
-    // Push hash state for browser back/forward
-    if (!fromPopState) {
-      skipHashUpdate = true;
-      history.pushState({ slide: n }, '', '#' + (n + 1));
-    }
-
     setTimeout(() => {
-      oldSlide.classList.remove('exit-left');
       oldSlide.style.transform = '';
       oldSlide.style.opacity = '';
       transitioning = false;
     }, 550);
   }
-
-  // Browser back/forward button support
-  window.addEventListener('popstate', function(e) {
-    if (e.state && typeof e.state.slide === 'number') {
-      goTo(e.state.slide, true);
-    } else {
-      // Check hash
-      const hash = parseInt(location.hash.replace('#', ''), 10);
-      if (hash >= 1 && hash <= TOTAL) {
-        goTo(hash - 1, true);
-      }
-    }
-  });
-
-  // Initialize from hash on load
-  (function initFromHash() {
-    const hash = parseInt(location.hash.replace('#', ''), 10);
-    if (hash >= 2 && hash <= TOTAL) {
-      // Jump to that slide without animation
-      slides[0].classList.remove('active');
-      slides[0].style.opacity = '0';
-      current = hash - 1;
-      slides[current].classList.add('active');
-      slides[current].style.opacity = '1';
-      updateUI();
-      activateSlide(current);
-    }
-    // Set initial state
-    history.replaceState({ slide: current }, '', '#' + (current + 1));
-  })();
 
   function updateUI() {
     progressBar.style.width = ((current + 1) / TOTAL * 100) + '%';
